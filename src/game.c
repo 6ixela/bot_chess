@@ -1,28 +1,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+
 #include "game.h"
-#include "movePiece.h"
-#include "minMax.h"
-#include "../test_function/testFunction.h"
 
 
-struct piece *newPiece(char *name)
+
+struct piece *newPiece(char name)
 {
     struct piece *res =  malloc(sizeof(struct piece));
-    size_t len = strlen(name) + 1;
-    if(strncmp(name, "pawn", len) == 0)
+    if(name == 'p')
         res->value = 100;
-    else if (strncmp(name, "knight", len) == 0)
+    else if (name == 'b')
         res->value = 300;
-    else if (strncmp(name, "bishop", len) == 0)
+    else if (name == 'n')
         res->value = 300;
-    else if (strncmp(name, "rook", len) == 0)
+    else if (name == 'r')
         res->value = 500;
-    else if (strncmp(name, "queen", len) == 0)
+    else if (name == 'q')
         res->value = 900;
-    else if (strncmp(name, "king", len) == 0)
-        res->value = 2000;
+    else if (name == 'k')
+        res->value = 10000;
     else
     {
         free(res);
@@ -35,53 +34,16 @@ struct piece *newPiece(char *name)
         res->hasMoved = 0;
         res->isWhite = 0;
         res->nbMoves = 0;
-        res->name = malloc(len);
+        res->name = name;
         res->possibleMoves = malloc(0);
-        memcpy(res->name, name, len);
     }
     return res;
 }
 
 void freePiece(struct piece *p)
 {
-    free(p->name);
-
     free(p->possibleMoves);
-    
     free(p);
-}
-
-struct piece **newBoard()
-{
-    //malloc board size: 64 pointers
-    struct piece **board = malloc(sizeof(struct piece*) * 64);
-    for (int i = 0; i<64; i++)
-    {
-        board[i] = NULL;
-    }
-
-    //list to place pieces
-    char piecesNames[][10] = {"rook", "knight", "bishop", "queen", "king",
-    "bishop", "knight", "rook"};
-
-    for(int x = 0; x<8; x++)
-    {
-        int posW1 = 8+x;
-        int posW2 = x;
-        int posB1 = 48+x;
-        int posB2 = 56+x;
-        //place pawns
-        placePiece(board, "pawn", posW1);
-        placePiece(board, "pawn", posB1);
-        board[posW1]->isWhite = 1;
-
-        //place others
-        placePiece(board, piecesNames[x], posW2);
-        placePiece(board, piecesNames[x], posB2);
-        board[posW2]->isWhite = 1;
-    }
-
-    return board;
 }
 
 void freeBoard(struct piece **board)
@@ -99,6 +61,72 @@ void freeBoard(struct piece **board)
     }
     free(board);
 }
+
+struct piece **FenToBoard(char *fen)
+{
+    struct piece **board = malloc(64 * sizeof(struct piece *));
+    size_t iBoard = 0;
+    size_t i = 0;
+    while(fen[i] != 0)
+    {
+        char letter = fen[i];
+        if(letter - '0' >= 0 && letter - '0' <= 9)
+        {
+            for (size_t j = 0; j < (size_t)letter - '0'; j++)
+            {
+                board[iBoard] = NULL;
+                iBoard++;
+            }
+        }
+        else
+        {
+            char c = letter;
+            int isWhite = 0;
+            if(isupper(c))
+            {
+                isWhite = 1;
+                c = tolower(c);
+            }
+            switch (c)
+            {
+            case 'r':
+                board[iBoard] = newPiece('r');
+                break;
+            case 'k':
+                board[iBoard] = newPiece('k');
+                break;
+            case 'q':
+                board[iBoard] = newPiece('q');
+                break;
+            case 'n':
+                board[iBoard] = newPiece('n');
+                break;
+            case 'b':
+                board[iBoard] = newPiece('b');
+                break;
+            case 'p':
+                board[iBoard] = newPiece('p');
+                break;
+            case '/':
+                i++;
+                continue;
+            default:
+                printf("erreur notation fen : %c at i = %ld\n", c, i);
+                break;
+            }
+            board[iBoard]->pos = iBoard;
+            board[iBoard]->pos = isWhite;
+            iBoard++;
+        }
+
+        i++;
+    }
+    return board;
+}
+
+
+
+/*
 
 int placePiece(struct piece **board, char* name, int pos)
 {
@@ -121,6 +149,7 @@ int placePiece(struct piece **board, char* name, int pos)
     return res;
 }
 
+//TODO
 int movePiece(struct piece **board, int pos, int dest)
 {
     return __movePiece(board, pos, dest, 0);
@@ -492,4 +521,4 @@ int isCheck(struct piece **board, int isWhite)
         }
     }
     return 0;
-}
+}*/

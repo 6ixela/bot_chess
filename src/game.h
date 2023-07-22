@@ -3,7 +3,7 @@
 
 struct piece
 {
-    char *name;
+    char name;
     int isWhite;
     int hasMoved;
     int value;
@@ -26,7 +26,7 @@ struct move
 
 //initializes a new piece with the given name
 //returns null if wrong name
-struct piece *newPiece (char* name);
+struct piece *newPiece (char name);
 
 //free the piece p
 void freePiece(struct piece *p);
@@ -38,6 +38,9 @@ struct piece **newBoard();
 //Free the board
 void freeBoard(struct piece **board);
 
+struct piece **FenToBoard(char *fen);
+
+/*
 struct move *newMove(struct piece **board, int start, int dest);
 
 //Places a piece at a given place
@@ -70,4 +73,5 @@ int TestCheckmate(struct piece **board ,struct piece *piece, int dest);
 
 //verify if king of a color is in check
 int isCheck(struct piece **board, int isWhite);
+*/
 #endif
